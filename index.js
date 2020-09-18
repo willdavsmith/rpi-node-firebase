@@ -3,6 +3,7 @@ const express = require('express')
 const firebase = require('firebase/app')
 require('firebase/database')
 const bodyParser = require('body-parser')
+const cors = require('cors')
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -23,10 +24,14 @@ app.get('/', (req, res) => {
     firebaseRead().then(r => res.send(`${r["count"]}`))
 })
 
-app.post('/upload', (req, res) => {
-    console.log(req.body.count)
-    firebaseWrite(req.body.count)
-    res.sendStatus(200)
+app.get('/upload', cors(), (req, res) => {
+    firebaseRead().then(r => {
+        firebaseWrite(Number(r["count"]) + 1)
+        res.sendStatus(200)
+    })
+    .catch(e => {
+        res.sendStatus(500)
+    })
 })
 
 app.listen(process.env.port, process.env.host)
